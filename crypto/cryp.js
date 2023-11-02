@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const ENC = process.env.SECRET_KEY_CRYPTO;
-const IV = "5183666c72eec9e4";
+const IV = process.env.CRYPTO_IV
 const ALGO = "aes-256-cbc"
 
 const encrypt = ((text) => {

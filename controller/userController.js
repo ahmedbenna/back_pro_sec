@@ -9,7 +9,8 @@ async function getCurentUser(req, res) {
     const userId = req.user._id;
     var id = new ObjectId(userId);
     try {
-        const user = await dbConn.getDB().collection(collectionName).findOne({ _id: id });
+        let user = await dbConn.getDB().collection(collectionName).findOne({ _id: id });
+        user = validateUser.decryptUser(user)
         res.json(user);
     } catch (err) {
         res.status(500).json({ 'messagee': err.message });

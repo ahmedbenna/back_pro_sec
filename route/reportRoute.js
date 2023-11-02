@@ -5,6 +5,7 @@ const verifyJWT = require('../middleware/verifyJWT');
 const reportController = require('../controller/reportController');
 const verifyAdmin = require('../middleware/verifyAdmin');
 
+router.get('/user', verifyJWT, reportController.getAllUserReport)
 router.post('/', verifyJWT, reportController.addReport);
 router.get('/', verifyJWT, verifyAdmin, reportController.getAllReport)
 router.get('/:id', verifyJWT, verifyAdmin, reportController.getReportById);

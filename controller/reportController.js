@@ -2,6 +2,7 @@ const { ObjectId } = require('mongodb')
 const dbConn = require('../config/dbConn');
 const validateReport = require('../model/report');
 const { encrypt, decrypt } = require('../crypto/cryp');
+const { decryptUser } = require('../model/user');
 const collectionName = 'report';
 
 async function addReport(req, res) {
@@ -16,8 +17,12 @@ async function addReport(req, res) {
                 content: req.body.content,
                 user: req.user
             }
-            report.content = encrypt(req.body.content)
+            report.content = encrypt(String(report.content))
+            report.date = encrypt(String(report.date))
             const result = await dbConn.getDB().collection(collectionName).insertOne(report);
+            report.content = decrypt(report.content)
+            report.date = decrypt(report.date)
+            report.user = decryptUser(report.user)
             res.status(201).json(report);
         }
     } catch (err) {
@@ -29,22 +34,39 @@ async function getAllReport(req, res) {
     try {
         const reports = await dbConn.getDB().collection(collectionName).find().toArray();
 
-        // let decryReports = reports.map((r =>   {...r, r.content= decrypt(r.content)} : r)
         reports.forEach((element, index) => {
             element.content = decrypt(element.content);
+            element.date = decrypt(element.date)
+            element.user = decryptUser(element.user)
           });
         res.json(reports);
     } catch (err) {
         res.status(500).json({ 'messagee': err.message });
     }
 }
+async function getAllUserReport(req, res) {
+    let user = req.user
+    try {
+        const reports = await dbConn.getDB().collection(collectionName).find ({user : user}).toArray();
 
+        reports.forEach((element, index) => {
+            element.content = decrypt(element.content);
+            element.date = decrypt(element.date)
+            element.user = decryptUser(element.user)
+          });
+        res.json(reports);
+    } catch (err) {
+        res.status(500).json({ 'messagee': err.message });
+    }
+}
 async function getReportById(req, res) {
     const reportId = req.params.id;
     var id = new ObjectId(reportId);
     try {
         const report = await dbConn.getDB().collection(collectionName).findOne({ _id: id });
         report.content = decrypt(report.content)
+        report.date = decrypt(report.date)
+        report.user = decryptUser(report.user)
         res.json(report);
     } catch (err) {
         res.status(500).json({ 'messagee': err.message });
@@ -61,6 +83,11 @@ async function find(req, res) {
             phone: "text"
         })
         const reportRes = await dbConn.getDB().collection(collectionName).find({ $text: { $search: report } }).toArray()
+        reportRes.forEach((element, index) => {
+            element.content = decrypt(element.content);
+            element.date = decrypt(element.date)
+            element.user = decryptUser(element.user)
+          });
         res.json(reportRes);
     } catch (err) {
         res.status(500).json({ 'messagee': err.message });
@@ -97,6 +124,7 @@ async function deleteReport(req, res) {
 }
 
 module.exports = {
+    getAllUserReport,
     find,
     getAllReport,
     addReport,

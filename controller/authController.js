@@ -2,18 +2,22 @@ const Bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const dbConn = require('../config/dbConn');
+const { encrypt } = require('../crypto/cryp');
+const { decryptUser } = require('../model/user');
 
 const collectionName = 'user';
 
 const handleLogin = async (req, res) => {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+    email= encrypt(email)
     if (!email || !password) return res.status(400).json({ 'message': 'Email and password are required.' });
     const users = await dbConn.getDB().collection(collectionName).find().toArray();
-    const foundUser = users.find(person => person.email === email);
+    let foundUser = users.find(person => person.email === email);
+
     if (!foundUser) return res.sendStatus(400);
     const match = await Bcrypt.compareSync(password, foundUser.password);
     if (match) {
-
+        // foundUser=decryptUser(foundUser)
         const accessToken = jwt.sign(
             {
                 "user": foundUser
