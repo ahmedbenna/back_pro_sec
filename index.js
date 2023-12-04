@@ -16,8 +16,8 @@ const verifyJWT = require('./middleware/verifyJWT');
 
 app.use(credentials);
 app.use(cookieParser());
-// app.use(cors(corsOptions));
-app.use(cors());
+app.use(cors(corsOptions));
+// app.use(cors());
 app.use(bodyParser.json())
 
 app.use('/auth', require('./route/auth'));
